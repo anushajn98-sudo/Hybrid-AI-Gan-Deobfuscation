@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="scanner-container">
+    <h2><i class="fas fa-search"></i> Malware Detection System</h2>
+    <p>Analyze random samples from the python_deobf_dataset.jsonl dataset</p>
+    
+    <div class="info-box">
+        <h4><i class="fas fa-info-circle"></i> How it works:</h4>
+        <ul>
+            <li>System loads a random sample from python_deobf_dataset.jsonl</li>
+            <li>Three models (LSTM, CodeBERT, GAN) analyze the obfuscated code</li>
+            <li>Gemini AI performs deobfuscation and predicts output</li>
+            <li>Comprehensive analysis including AST, lexical analysis, and code execution</li>
+        </ul>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{{ url_for('analyze_random') }}" class="btn btn-primary">
+            <i class="fas fa-random"></i> Analyze Random Sample
+        </a>
+        <a href="{{ url_for('test_dataset') }}" class="btn btn-secondary">
+            <i class="fas fa-database"></i> Test Full Dataset
+        </a>
+        <a href="{{ url_for('history') }}" class="btn btn-secondary">
+            <i class="fas fa-history"></i> View History
+        </a>
+    </div>
+</div>
+
+<div class="info-panel">
+    <h3><i class="fas fa-info-circle"></i> About Our Technology</h3>
+    <div class="info-content">
+        <p>Our system uses multiple advanced approaches to detect and analyze potentially malicious code:</p>
+        
+        <h4>Triple Detection Models:</h4>
+        <ul>
+            <li><strong>LSTM Neural Network:</strong> Specialized in pattern recognition for sequential code data</li>
+            <li><strong>CodeBERT Transformer:</strong> Advanced transformer model fine-tuned for code analysis</li>
+            <li><strong>GAN Classifier:</strong> Generative Adversarial Network for sophisticated malware detection</li>
+        </ul>
+        
+        <h4>Comprehensive Analysis:</h4>
+        <ul>
+            <li><strong>Google Gemini AI:</strong> State-of-the-art AI for code deobfuscation and execution analysis</li>
+            <li><strong>AST Analysis:</strong> Abstract Syntax Tree parsing for structural understanding</li>
+            <li><strong>Lexical Analysis:</strong> Token-level examination of code components</li>
+            <li><strong>BLEU Score:</strong> Quantitative similarity measurement between different deobfuscations</li>
+            <li><strong>Code Execution:</strong> Safe execution of deobfuscated code to verify functionality</li>
+        </ul>
+        
+        <p class="highlight">All three models (LSTM, CodeBERT, and GAN) work together with Gemini AI to provide comprehensive malware detection and analysis.</p>
+    </div>
+</div>
+
+<style>
+.info-box {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #e9ecef;
+}
+
+.info-box h4 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.info-box ul {
+    margin-bottom: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+    justify-content: center;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn {
+        min-width: auto;
+    }
+}
+</style>
+{% endblock %}

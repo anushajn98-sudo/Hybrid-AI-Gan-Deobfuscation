@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-content">
+        <h2>Protect Your Code from Malicious Scripts</h2>
+        <p>CodeShield uses advanced AI to detect and deobfuscate potentially harmful Python code</p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
+        </div>
+    </div>
+</div>
+
+<div class="features">
+    <h2>Why Choose CodeShield?</h2>
+    <div class="feature-grid">
+        <div class="feature">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Advanced Detection</h3>
+            <p>Uses LSTM neural networks to identify malicious code patterns</p>
+        </div>
+        <div class="feature">
+            <i class="fas fa-code"></i>
+            <h3>AI-Powered Deobfuscation</h3>
+            <p>Leverages Google's Gemini AI to deobfuscate and analyze code</p>
+        </div>
+        <div class="feature">
+            <i class="fas fa-history"></i>
+            <h3>History Tracking</h3>
+            <p>Keep records of all your scans for future reference</p>
+        </div>
+        <div class="feature">
+            <i class="fas fa-user-shield"></i>
+            <h3>User Authentication</h3>
+            <p>Secure login system to protect your data and history</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

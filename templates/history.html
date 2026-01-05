@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="history-container">
+    <h2><i class="fas fa-history"></i> Scan History</h2>
+    
+    {% if history %}
+        <div class="history-list">
+            {% for record in history %}
+                <div class="history-item">
+                    <div class="history-header">
+                        <span class="history-date">{{ record.timestamp }}</span>
+                        <span class="malware-type {{ 'safe' if record.malware_type == 'benign' else 'danger' }}">
+                            {% if record.malware_type == 'benign' %}
+                                ✅ Benign
+                            {% else %}
+                                ⚠️ {{ record.malware_type }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="history-code-preview">
+                        <strong>Input:</strong>
+                        <pre>{{ record.input_code[:200] }}{% if record.input_code|length > 200 %}...{% endif %}</pre>
+                    </div>
+                    
+                    <div class="history-actions">
+                        <button class="btn btn-small" onclick="showHistoryDetails({{ record.id }})">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                    </div>
+                    
+                    <!-- Detailed view (hidden by default) -->
+                    <div id="details-{{ record.id }}" class="history-details" style="display: none;">
+                        <div class="code-section">
+                            <h4>Original Code</h4>
+                            <pre>{{ record.input_code }}</pre>
+                        </div>
+                        
+                        <div class="code-section">
+                            <h4>Deobfuscated Code & Output</h4>
+                            <pre>{{ record.deobfuscated_code }}</pre>
+                        </div>
+                        
+                        <button class="btn btn-small" onclick="hideHistoryDetails({{ record.id }})">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-history fa-3x"></i>
+            <h3>No scan history yet</h3>
+            <p>Your code analysis history will appear here after you scan some code.</p>
+            <a href="{{ url_for('home') }}" class="btn btn-primary">Scan Your First Code</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function showHistoryDetails(recordId) {
+    document.getElementById('details-' + recordId).style.display = 'block';
+}
+
+function hideHistoryDetails(recordId) {
+    document.getElementById('details-' + recordId).style.display = 'none';
+}
+</script>
+{% endblock %}

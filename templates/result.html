@@ -1,0 +1,634 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="result-container">
+    <h2><i class="fas fa-file-medical-alt"></i> Analysis Results</h2>
+    <p class="sample-info">Sample ID: <strong>{{ sample_id }}</strong> | Expected Label: <span class="{{ 'benign' if expected_label == 'benign' else 'malware' }}">{{ expected_label }}</span></p>
+    
+    <!-- System Metrics -->
+    <div class="result-section">
+        <h3><i class="fas fa-tachometer-alt"></i> System Performance</h3>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value">{{ "%.3f"|format(system_metrics.total_time) }}s</div>
+                <div class="metric-label">Total Time</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ "%.2f"|format(system_metrics.memory_used) }}MB</div>
+                <div class="metric-label">Memory Used</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ "%.1f"|format(system_metrics.cpu_usage) }}%</div>
+                <div class="metric-label">CPU Usage</div>
+            </div>
+        </div>
+        
+        <div class="detailed-metrics">
+            <h4>Detailed Timing:</h4>
+            <div class="timing-grid">
+                <div class="timing-item">
+                    <span class="timing-label">LSTM:</span>
+                    <span class="timing-value">{{ "%.3f"|format(system_metrics.lstm_time) }}s</span>
+                </div>
+                <div class="timing-item">
+                    <span class="timing-label">CodeBERT:</span>
+                    <span class="timing-value">{{ "%.3f"|format(system_metrics.codebert_time) }}s</span>
+                </div>
+                <div class="timing-item">
+                    <span class="timing-label">GAN:</span>
+                    <span class="timing-value">{{ "%.3f"|format(system_metrics.gan_time) }}s</span>
+                </div>
+                <div class="timing-item">
+                    <span class="timing-label">Gemini:</span>
+                    <span class="timing-value">{{ "%.3f"|format(system_metrics.gemini_time) }}s</span>
+                </div>
+                <div class="timing-item">
+                    <span class="timing-label">Execution:</span>
+                    <span class="timing-value">{{ "%.3f"|format(system_metrics.execution_time) }}s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="result-section">
+        <h3><i class="fas fa-bug"></i> Malware Detection</h3>
+        <div class="models-comparison">
+            <div class="model-result">
+                <h4>LSTM Model</h4>
+                <div class="malware-result {{ 'safe' if malware_type_lstm == 'benign' else 'danger' }}">
+                    {% if malware_type_lstm == 'benign' %}
+                        <i class="fas fa-check-circle"></i>
+                        <p>✅ This code is BENIGN</p>
+                    {% else %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>⚠️ Malware detected → Type: {{ malware_type_lstm }}</p>
+                    {% endif %}
+                </div>
+                <div class="confidence-scores">
+                    <h5>Confidence Scores:</h5>
+                    {% for label, score in confidence_lstm.items() %}
+                    <div class="score-item">
+                        <span class="label">{{ label }}:</span>
+                        <span class="score">{{ "%.2f"|format(score * 100) }}%</span>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: {{ score * 100 }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="model-result">
+                <h4>CodeBERT Model</h4>
+                <div class="malware-result {{ 'safe' if malware_type_codebert == 'benign' else 'danger' }}">
+                    {% if malware_type_codebert == 'benign' %}
+                        <i class="fas fa-check-circle"></i>
+                        <p>✅ This code is BENIGN</p>
+                    {% else %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>⚠️ Malware detected → Type: {{ malware_type_codebert }}</p>
+                    {% endif %}
+                </div>
+                <div class="confidence-scores">
+                    <h5>Confidence Scores:</h5>
+                    {% for label, score in confidence_codebert.items() %}
+                    <div class="score-item">
+                        <span class="label">{{ label }}:</span>
+                        <span class="score">{{ "%.2f"|format(score * 100) }}%</span>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: {{ score * 100 }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- GAN Results - Placed below LSTM and CodeBERT -->
+        <div class="model-result gan-result">
+            <h4>GAN Model</h4>
+            <div class="malware-result {{ 'safe' if malware_type_gan == 'benign' else 'danger' }}">
+                {% if malware_type_gan == 'benign' %}
+                    <i class="fas fa-check-circle"></i>
+                    <p>✅ This code is BENIGN</p>
+                {% else %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>⚠️ Malware detected → Type: {{ malware_type_gan }}</p>
+                {% endif %}
+            </div>
+            <div class="confidence-scores">
+                <h5>Confidence Scores:</h5>
+                {% for label, score in confidence_gan.items() %}
+                <div class="score-item">
+                    <span class="label">{{ label }}:</span>
+                    <span class="score">{{ "%.2f"|format(score * 100) }}%</span>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: {{ score * 100 }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="metrics-section">
+        <h3><i class="fas fa-chart-line"></i> Analysis Metrics</h3>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value">{{ bleu_score }}%</div>
+                <div class="metric-label">LSTM-Gemini BLEU</div>
+                <div class="metric-description">Similarity between LSTM and Gemini deobfuscations</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ bleu_score_expected }}%</div>
+                <div class="metric-label">Expected-Gemini BLEU</div>
+                <div class="metric-description">Similarity between expected and Gemini deobfuscations</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value {{ 'success' if execution_result.success else 'danger' }}">
+                    {% if execution_result.success %}
+                        <i class="fas fa-check-circle"></i>
+                    {% else %}
+                        <i class="fas fa-times-circle"></i>
+                    {% endif %}
+                </div>
+                <div class="metric-label">Execution</div>
+                <div class="metric-description">
+                    {% if execution_result.success %}
+                        Code executed successfully
+                    {% else %}
+                        Execution failed
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="result-section">
+        <h3><i class="fas fa-code"></i> Original Obfuscated Code</h3>
+        <div class="code-block">
+            <pre>{{ input_code }}</pre>
+        </div>
+    </div>
+    
+    <div class="result-section">
+        <h3><i class="fas fa-shield-alt"></i> Deobfuscated Code (Gemini)</h3>
+        <div class="code-block">
+            <pre>{{ deobf_code }}</pre>
+        </div>
+    </div>
+    
+    <div class="result-section">
+        <h3><i class="fas fa-check-circle"></i> Expected Deobfuscated Code</h3>
+        <div class="code-block">
+            <pre>{{ expected_deobf }}</pre>
+        </div>
+    </div>
+    
+    <div class="result-section">
+        <h3><i class="fas fa-terminal"></i> Expected Output (from Gemini)</h3>
+        <div class="output-block">
+            <pre>{{ gemini_output }}</pre>
+        </div>
+    </div>
+    
+    <div class="result-section">
+        <h3><i class="fas fa-exclamation-triangle"></i> Execution Result</h3>
+        <div class="execution-result {{ 'success' if execution_result.success else 'error' }}">
+            <div class="execution-status">
+                <i class="fas {{ 'fa-check-circle' if execution_result.success else 'fa-times-circle' }}"></i>
+                <span>
+                    {% if execution_result.success %}
+                        Code executed successfully
+                    {% else %}
+                        Execution failed
+                    {% endif %}
+                </span>
+            </div>
+            
+            {% if execution_result.stdout %}
+            <div class="execution-output">
+                <h4>Output:</h4>
+                <pre>{{ execution_result.stdout }}</pre>
+            </div>
+            {% endif %}
+            
+            {% if execution_result.stderr %}
+            <div class="execution-error">
+                <h4>Error:</h4>
+                <pre>{{ execution_result.stderr }}</pre>
+            </div>
+            {% endif %}
+            
+            {% if execution_result.returncode != 0 %}
+            <div class="execution-returncode">
+                <h4>Return Code:</h4>
+                <span>{{ execution_result.returncode }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="result-section">
+        <h3><i class="fas fa-sitemap"></i> AST Analysis</h3>
+        <div class="ast-analysis">
+            {% if ast_analysis.errors %}
+                <div class="ast-error">
+                    <p>{{ ast_analysis.errors[0] }}</p>
+                </div>
+            {% else %}
+                <div class="ast-grid">
+                    <div class="ast-category">
+                        <h4>Functions</h4>
+                        {% if ast_analysis.functions %}
+                            <ul>
+                                {% for func in ast_analysis.functions %}
+                                <li>{{ func }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No functions found</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="ast-category">
+                        <h4>Classes</h4>
+                        {% if ast_analysis.classes %}
+                            <ul>
+                                {% for cls in ast_analysis.classes %}
+                                <li>{{ cls }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No classes found</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="ast-category">
+                        <h4>Imports</h4>
+                        {% if ast_analysis.imports %}
+                            <ul>
+                                {% for imp in ast_analysis.imports %}
+                                <li>{{ imp }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No imports found</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="ast-category">
+                        <h4>Function Calls</h4>
+                        {% if ast_analysis.calls %}
+                            <ul>
+                                {% for call in ast_analysis.calls %}
+                                <li>{{ call }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No function calls found</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="result-section">
+        <h3><i class="fas fa-language"></i> Lexical Analysis</h3>
+        <div class="lexical-analysis">
+            {% if lexical_analysis[0].error %}
+                <div class="lexical-error">
+                    <p>{{ lexical_analysis[0].error }}</p>
+                </div>
+            {% else %}
+                <div class="tokens-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Token</th>
+                                <th>Line</th>
+                                <th>Position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for token in lexical_analysis[:50] %}
+                            <tr>
+                                <td>{{ token.type }}</td>
+                                <td><code>{{ token.string }}</code></td>
+                                <td>{{ token.start[0] }}</td>
+                                <td>{{ token.start[1] }}-{{ token.end[1] }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% if lexical_analysis|length > 50 %}
+                            <tr>
+                                <td colspan="4" style="text-align: center;">
+                                    <em>Showing 50 of {{ lexical_analysis|length }} tokens</em>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{{ url_for('analyze_random') }}" class="btn btn-primary"><i class="fas fa-random"></i> Analyze Another Random Sample</a>
+        <a href="{{ url_for('test_dataset') }}" class="btn btn-secondary"><i class="fas fa-database"></i> Test Full Dataset</a>
+        <a href="{{ url_for('history') }}" class="btn btn-secondary"><i class="fas fa-history"></i> View History</a>
+    </div>
+</div>
+
+<style>
+.sample-info {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-left: 4px solid #007bff;
+}
+
+.benign {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.malware {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.metric-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+}
+
+.metric-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.detailed-metrics {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.timing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.timing-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+}
+
+.timing-label {
+    font-weight: 500;
+}
+
+.timing-value {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.models-comparison {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.gan-result {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #e9ecef;
+}
+
+.model-result {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.malware-result {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.malware-result.safe {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.malware-result.danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.confidence-scores {
+    margin-top: 15px;
+}
+
+.score-item {
+    margin-bottom: 8px;
+}
+
+.score-bar {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    margin-top: 4px;
+}
+
+.score-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: #007bff;
+    transition: width 0.3s ease;
+}
+
+.code-block, .output-block {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+    overflow-x: auto;
+}
+
+.code-block pre, .output-block pre {
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.execution-result {
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid;
+}
+
+.execution-result.success {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.execution-result.error {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.ast-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.ast-category {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+}
+
+.ast-category h4 {
+    margin-top: 0;
+    color: #495057;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 8px;
+}
+
+.ast-category ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.ast-category li {
+    margin-bottom: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+}
+
+.tokens-table {
+    overflow-x: auto;
+}
+
+.tokens-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.tokens-table th,
+.tokens-table td {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+}
+
+.tokens-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.tokens-table code {
+    background: #e9ecef;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+@media (max-width: 768px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .models-comparison {
+        grid-template-columns: 1fr;
+    }
+    
+    .ast-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
